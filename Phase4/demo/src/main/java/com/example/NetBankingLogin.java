@@ -57,6 +57,7 @@ public class NetBankingLogin extends JFrame implements ActionListener {
         panel.add(passwordLbl);
         panel.add(passwordTxt);
 
+
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         btnPanel.add(registerBtn);
         btnPanel.add(loginBtn);
@@ -88,6 +89,7 @@ public class NetBankingLogin extends JFrame implements ActionListener {
                     String registeredUsername = parts[0];
                     String registeredPassword = parts[2];
                     String registeredEmailID = parts[1];
+                    String accountType = parts[3];
 
                     if (username.equals(registeredUsername) && password.equals(registeredPassword)) {
                         // Generate a random 6-digit verification code
@@ -99,7 +101,13 @@ public class NetBankingLogin extends JFrame implements ActionListener {
                         // Check if the input code matches the generated code
                         if (input != null && input.equals(Integer.toString(code))) {
                             JOptionPane.showMessageDialog(this, "Login successful");
-                            new BankHomePage(registeredUsername,registeredEmailID).setVisible(true);
+                            if (accountType.equals("Manager/Admin")){
+                                new BankHomePage3(registeredUsername, registeredEmailID).setVisible(true);
+                            } else if (accountType.equals("Employee")){
+                                new BankHomePage2(registeredUsername, registeredEmailID).setVisible(true);
+                            } else {
+                                new BankHomePage(registeredUsername, registeredEmailID).setVisible(true);
+                            }
                             dispose(); // Close the login window
                         } else {
                             JOptionPane.showMessageDialog(this, "Invalid verification code.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -116,7 +124,7 @@ public class NetBankingLogin extends JFrame implements ActionListener {
                     JOptionPane.showMessageDialog(this, "Invalid username or password.", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             } catch (FileNotFoundException ex) {
-                System.out.println("Error: registrations.txt file not found.");
+                JOptionPane.showMessageDialog(null, "No registered user.");
             }
         }
     }

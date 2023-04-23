@@ -18,11 +18,12 @@ public class RegistrationPage extends JFrame implements ActionListener {
     JTextField usernameTxt, emailTxt;
     JPasswordField passwordTxt, confirmPasswordTxt;
     JButton registerBtn;
+    JComboBox<String> accountTypeComboBox;
 
     public RegistrationPage() {
         // Set window properties
         setTitle("Registration Page");
-        setSize(400, 300);
+        setSize(400, 400);
         setLocationRelativeTo(null); // Center the window on the screen
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -36,6 +37,10 @@ public class RegistrationPage extends JFrame implements ActionListener {
         emailLbl = new JLabel("Email ID:");
         emailTxt = new JTextField();
 
+        String[] accountTypes = {"Manager/Admin", "Customer", "Employee"};
+        accountTypeComboBox = new JComboBox<>(accountTypes);
+
+
         passwordLbl = new JLabel("Password:");
         passwordTxt = new JPasswordField();
 
@@ -45,7 +50,7 @@ public class RegistrationPage extends JFrame implements ActionListener {
         registerBtn = new JButton("Register");
 
         // Add UI elements to layout
-        JPanel panel = new JPanel(new GridLayout(6, 2, 10, 10));
+        JPanel panel = new JPanel(new GridLayout(10, 3, 10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         panel.add(titleLbl);
         panel.add(new JLabel());
@@ -53,6 +58,8 @@ public class RegistrationPage extends JFrame implements ActionListener {
         panel.add(usernameTxt);
         panel.add(emailLbl);
         panel.add(emailTxt);
+        panel.add(new JLabel("Account Type:"));
+        panel.add(accountTypeComboBox);
         panel.add(passwordLbl);
         panel.add(passwordTxt);
         panel.add(confirmPasswordLbl);
@@ -72,6 +79,7 @@ public class RegistrationPage extends JFrame implements ActionListener {
             String email = emailTxt.getText();
             String password = String.valueOf(passwordTxt.getPassword());
             String reenteredPassword = String.valueOf(confirmPasswordTxt.getPassword());
+            String accountType = (String) accountTypeComboBox.getSelectedItem();
 
             if (username.length() < 6 || username.length() > 20) {
                 JOptionPane.showMessageDialog(this, "Username must be between 6 and 20 characters long.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -119,10 +127,10 @@ public class RegistrationPage extends JFrame implements ActionListener {
                 } else {
                     // Perform registration logic here
                     JOptionPane.showMessageDialog(this, "Registration successful.");
-                    
+
                     // Store registration details in a list
-                    String registrationDetails = username+","+email+","+password;
-                    
+                    String registrationDetails = username + "," + email + "," + password + "," + accountType;
+
                     // Write registration details to text file
                     try {
                         FileWriter writer = new FileWriter("registrations.txt", true);
@@ -137,7 +145,7 @@ public class RegistrationPage extends JFrame implements ActionListener {
             }
         });
             panel.add(registerBtn);
-    
+
             add(panel);
             setVisible(true);
      }

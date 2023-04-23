@@ -9,7 +9,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-public class BankHomePage extends JFrame implements ActionListener {
+public class BankHomePage3 extends JFrame implements ActionListener {
 
     JLabel titleLbl, welcomeLbl;
     JButton addProjBtn, editProjBtn, delProjBtn, addTaskBtn, editTaskBtn, delTaskBtn;
@@ -18,11 +18,11 @@ public class BankHomePage extends JFrame implements ActionListener {
     private Timer timer;
     private int counter = 0;
 
-    public BankHomePage(String username, String emailID) {
+    public BankHomePage3(String username, String emailID) {
         this.username = username;
         this.emailID = emailID;
         // Set window properties
-        setTitle("Bank Home Page : Customer");
+        setTitle("Bank Home Page : Manager/Admin");
         setSize(600, 400);
         setLocationRelativeTo(null); // Center the window on the screen
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
