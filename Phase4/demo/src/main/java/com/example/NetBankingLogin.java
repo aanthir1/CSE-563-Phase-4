@@ -10,6 +10,9 @@ import com.sendgrid.*;
 import com.sendgrid.helpers.mail.Mail;
 import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import javax.swing.*;
 import java.awt.*;
@@ -17,12 +20,11 @@ import java.awt.event.*;
 
 public class NetBankingLogin extends JFrame implements ActionListener {
 
-    JLabel titleLbl, usernameLbl, passwordLbl, codeLbl;
-    JTextField usernameTxt, codeTxt;
+    JLabel titleLbl, usernameLbl, passwordLbl;
+    JTextField usernameTxt;
     JPasswordField passwordTxt;
     JButton loginBtn, registerBtn;
     int numAttempts = 0;
-    int emailCode;
 
     public NetBankingLogin() {
         // Set window properties
@@ -78,6 +80,7 @@ public class NetBankingLogin extends JFrame implements ActionListener {
             String username = usernameTxt.getText();
             String password = String.valueOf(passwordTxt.getPassword());
 
+
             // Read the registrations.txt file and search for the username and password
             try {
                 File file = new File("registrations.txt");
@@ -90,29 +93,34 @@ public class NetBankingLogin extends JFrame implements ActionListener {
                     String registeredPassword = parts[2];
                     String registeredEmailID = parts[1];
                     String accountType = parts[3];
+                    String enteredHash ;
+                    try {
+                        enteredHash = hashPassword(password);
+                        if (username.equals(registeredUsername) && enteredHash.equals(registeredPassword)) {
+                            // Generate a random 6-digit verification code
+                            int code = sendOTP(registeredEmailID);
 
-                    if (username.equals(registeredUsername) && password.equals(registeredPassword)) {
-                        // Generate a random 6-digit verification code
-                        int code = sendOTP(registeredEmailID);
+                            // Prompt the user to enter the verification code
+                            String input = JOptionPane.showInputDialog(this, "A verification code has been sent to your registered email address. Please enter the code below:");
 
-                        // Prompt the user to enter the verification code
-                        String input = JOptionPane.showInputDialog(this, "A verification code has been sent to your registered email address. Please enter the code below:");
-
-                        // Check if the input code matches the generated code
-                        if (input != null && input.equals(Integer.toString(code))) {
-                            JOptionPane.showMessageDialog(this, "Login successful");
-                            if (accountType.equals("Manager/Admin")){
-                                new BankHomePage3(registeredUsername, registeredEmailID).setVisible(true);
-                            } else if (accountType.equals("Employee")){
-                                new BankHomePage2(registeredUsername, registeredEmailID).setVisible(true);
+                            // Check if the input code matches the generated code
+                            if (input != null && input.equals(Integer.toString(code))) {
+                                JOptionPane.showMessageDialog(this, "Login successful");
+                                if (accountType.equals("Manager/Admin")) {
+                                    new BankHomePage3(registeredUsername, registeredEmailID).setVisible(true);
+                                } else if (accountType.equals("Employee")) {
+                                    new BankHomePage2(registeredUsername, registeredEmailID).setVisible(true);
+                                } else {
+                                    new BankHomePage(registeredUsername, registeredEmailID).setVisible(true);
+                                }
+                                dispose(); // Close the login window
                             } else {
-                                new BankHomePage(registeredUsername, registeredEmailID).setVisible(true);
+                                JOptionPane.showMessageDialog(this, "Invalid verification code.", "Error", JOptionPane.ERROR_MESSAGE);
                             }
-                            dispose(); // Close the login window
-                        } else {
-                            JOptionPane.showMessageDialog(this, "Invalid verification code.", "Error", JOptionPane.ERROR_MESSAGE);
+                            return;
                         }
-                        return;
+                    }catch (NoSuchAlgorithmException ne) {
+                        // handle exception
                     }
                 }
                 // If the loop completes without finding a matching username and password, display an error message
@@ -148,11 +156,21 @@ public class NetBankingLogin extends JFrame implements ActionListener {
             request.setMethod(Method.POST);
             request.setEndpoint("mail/send");
             request.setBody(mail.build());
-            Response response = sg.api(request);
         } catch (IOException ex) {
             ex.printStackTrace();
         }
         return code;
+    }
+    public String hashPassword(String password) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hash = digest.digest(password.getBytes());
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : hash) {
+            String hex = Integer.toHexString(0xff & b);
+            if (hex.length() == 1) hexString.append('0');
+            hexString.append(hex);
+        }
+        return hexString.toString();
     }
 
     public static void main(String[] args) {

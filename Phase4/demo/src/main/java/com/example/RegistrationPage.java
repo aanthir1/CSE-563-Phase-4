@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.ArrayList;
 import java.awt.*;
 import java.awt.event.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class RegistrationPage extends JFrame implements ActionListener {
 
@@ -80,12 +82,18 @@ public class RegistrationPage extends JFrame implements ActionListener {
             String password = String.valueOf(passwordTxt.getPassword());
             String reenteredPassword = String.valueOf(confirmPasswordTxt.getPassword());
             String accountType = (String) accountTypeComboBox.getSelectedItem();
+            String hashPwd;
+            try {
+                hashPwd = hashPassword(password);
+            } catch (NoSuchAlgorithmException ex) {
+                throw new RuntimeException(ex);
+            }
 
             if (username.length() < 6 || username.length() > 20) {
                 JOptionPane.showMessageDialog(this, "Username must be between 6 and 20 characters long.", "Error", JOptionPane.ERROR_MESSAGE);
             } else if (password.length() < 8 || password.length() > 15) {
                 JOptionPane.showMessageDialog(this, "Password must be between 8 and 15 characters long.", "Error", JOptionPane.ERROR_MESSAGE);
-            } else if (!String.valueOf(password).equals(String.valueOf(reenteredPassword))) {
+            } else if (!password.equals(reenteredPassword)) {
                 JOptionPane.showMessageDialog(this, "Passwords do not match.", "Error", JOptionPane.ERROR_MESSAGE);
             } else if (!isValidEmail(email)) {
                 JOptionPane.showMessageDialog(this, "Email address is incorrect", "Error", JOptionPane.ERROR_MESSAGE);
@@ -129,7 +137,7 @@ public class RegistrationPage extends JFrame implements ActionListener {
                     JOptionPane.showMessageDialog(this, "Registration successful.");
 
                     // Store registration details in a list
-                    String registrationDetails = username + "," + email + "," + password + "," + accountType;
+                    String registrationDetails = username + "," + email + "," + hashPwd + "," + accountType;
 
                     // Write registration details to text file
                     try {
@@ -191,4 +199,17 @@ public class RegistrationPage extends JFrame implements ActionListener {
         String emailRegex = "^[\\w.%+-]+@[\\w.-]+\\.[a-zA-Z]{2,}$";
         return email.matches(emailRegex);
     }
+
+    public String hashPassword(String password) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hash = digest.digest(password.getBytes());
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : hash) {
+            String hex = Integer.toHexString(0xff & b);
+            if (hex.length() == 1) hexString.append('0');
+            hexString.append(hex);
+        }
+        return hexString.toString();
+    }
+
 }
