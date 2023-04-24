@@ -23,7 +23,7 @@ public class NetBankingLogin extends JFrame implements ActionListener {
     JLabel titleLbl, usernameLbl, passwordLbl;
     JTextField usernameTxt;
     JPasswordField passwordTxt;
-    JButton loginBtn, registerBtn;
+    JButton loginBtn, registerBtn, forgotPasswordBtn;
     int numAttempts = 0;
 
     public NetBankingLogin() {
@@ -49,6 +49,9 @@ public class NetBankingLogin extends JFrame implements ActionListener {
         registerBtn = new JButton("Register New User");
         registerBtn.addActionListener(this);
 
+        forgotPasswordBtn = new JButton("Forgot Password");
+        forgotPasswordBtn.addActionListener(this);
+
         // Add UI elements to layout
         JPanel panel = new JPanel(new GridLayout(4, 2, 10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
@@ -61,6 +64,7 @@ public class NetBankingLogin extends JFrame implements ActionListener {
 
 
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        btnPanel.add(forgotPasswordBtn);
         btnPanel.add(registerBtn);
         btnPanel.add(loginBtn);
 
@@ -76,6 +80,8 @@ public class NetBankingLogin extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         if(e.getSource() == registerBtn) {
             new RegistrationPage();
+        }else if(e.getSource() == forgotPasswordBtn){
+            new ForgotPassword();
         }else if (e.getSource() == loginBtn) {
             String username = usernameTxt.getText();
             String password = String.valueOf(passwordTxt.getPassword());
@@ -89,6 +95,9 @@ public class NetBankingLogin extends JFrame implements ActionListener {
                 while (scanner.hasNextLine()) {
                     String line = scanner.nextLine();
                     String[] parts = line.split(",");
+                    if(parts.length < 4){
+                        continue;
+                    }
                     String registeredUsername = parts[0];
                     String registeredPassword = parts[2];
                     String registeredEmailID = parts[1];
@@ -99,7 +108,6 @@ public class NetBankingLogin extends JFrame implements ActionListener {
                         if (username.equals(registeredUsername) && enteredHash.equals(registeredPassword)) {
                             // Generate a random 6-digit verification code
                             int code = sendOTP(registeredEmailID);
-
                             // Prompt the user to enter the verification code
                             String input = JOptionPane.showInputDialog(this, "A verification code has been sent to your registered email address. Please enter the code below:");
 

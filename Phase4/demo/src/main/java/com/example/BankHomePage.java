@@ -145,7 +145,4 @@ public class BankHomePage extends JFrame implements ActionListener {
         contactSupportFrm.add(panel);
         contactSupportFrm.setVisible(true);
     }
-    public static void main(String[] args) {
-        new BankHomePage("akanksha","ak123@gmail.com");
-    }
 }

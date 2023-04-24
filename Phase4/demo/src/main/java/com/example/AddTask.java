@@ -67,8 +67,4 @@ public class AddTask extends JFrame {
         // Display the window
         setVisible(true);
     }
-
-    public static void main(String[] args) {
-        new AddTask();
-    }
 }

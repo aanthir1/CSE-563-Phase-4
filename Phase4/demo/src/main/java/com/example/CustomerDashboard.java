@@ -62,8 +62,4 @@ public class CustomerDashboard extends JFrame {
         getContentPane().add(scrollPane, BorderLayout.CENTER);
         setVisible(true);
     }
-
-    public static void main(String[] args) {
-        new CustomerDashboard();
-    }
 }
