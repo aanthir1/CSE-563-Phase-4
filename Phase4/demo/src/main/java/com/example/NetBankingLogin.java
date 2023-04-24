@@ -6,6 +6,7 @@
 
 package com.example;
 import java.io.*;
+import java.awt.image.BufferedImage;
 import com.sendgrid.*;
 import com.sendgrid.helpers.mail.Mail;
 import com.sendgrid.helpers.mail.objects.Content;
@@ -20,16 +21,18 @@ import java.awt.event.*;
 
 public class NetBankingLogin extends JFrame implements ActionListener {
 
-    JLabel titleLbl, usernameLbl, passwordLbl;
-    JTextField usernameTxt;
-    JPasswordField passwordTxt;
-    JButton loginBtn, registerBtn, forgotPasswordBtn;
-    int numAttempts = 0;
+    private JLabel titleLbl, usernameLbl, passwordLbl, captchaLbl;
+    private JTextField usernameTxt, captchaTxt;
+    private JPasswordField passwordTxt;
+    private JButton loginBtn, registerBtn, forgotPasswordBtn;
+    private int numAttempts = 0;
+    private Random random = new Random();
+    private String captchaText;
 
     public NetBankingLogin() {
         // Set window properties
         setTitle("Net Banking Login");
-        setSize(400, 300);
+        setSize(400, 350);
         setLocationRelativeTo(null); // Center the window on the screen
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -53,7 +56,7 @@ public class NetBankingLogin extends JFrame implements ActionListener {
         forgotPasswordBtn.addActionListener(this);
 
         // Add UI elements to layout
-        JPanel panel = new JPanel(new GridLayout(4, 2, 10, 10));
+        JPanel panel = new JPanel(new GridLayout(5, 2, 10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         panel.add(titleLbl);
         panel.add(new JLabel());
@@ -68,7 +71,6 @@ public class NetBankingLogin extends JFrame implements ActionListener {
         btnPanel.add(registerBtn);
         btnPanel.add(loginBtn);
 
-
         add(panel, BorderLayout.CENTER);
         add(btnPanel, BorderLayout.SOUTH);
 
@@ -80,13 +82,9 @@ public class NetBankingLogin extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         if(e.getSource() == registerBtn) {
             new RegistrationPage();
-        }else if(e.getSource() == forgotPasswordBtn){
-            new ForgotPassword();
         }else if (e.getSource() == loginBtn) {
             String username = usernameTxt.getText();
-            String password = String.valueOf(passwordTxt.getPassword());
-
-
+            String password = new String(passwordTxt.getPassword());
             // Read the registrations.txt file and search for the username and password
             try {
                 File file = new File("registrations.txt");
@@ -95,19 +93,17 @@ public class NetBankingLogin extends JFrame implements ActionListener {
                 while (scanner.hasNextLine()) {
                     String line = scanner.nextLine();
                     String[] parts = line.split(",");
-                    if(parts.length < 4){
-                        continue;
-                    }
                     String registeredUsername = parts[0];
                     String registeredPassword = parts[2];
                     String registeredEmailID = parts[1];
                     String accountType = parts[3];
-                    String enteredHash ;
+                    String enteredHash;
                     try {
                         enteredHash = hashPassword(password);
                         if (username.equals(registeredUsername) && enteredHash.equals(registeredPassword)) {
                             // Generate a random 6-digit verification code
                             int code = sendOTP(registeredEmailID);
+
                             // Prompt the user to enter the verification code
                             String input = JOptionPane.showInputDialog(this, "A verification code has been sent to your registered email address. Please enter the code below:");
 
@@ -122,15 +118,16 @@ public class NetBankingLogin extends JFrame implements ActionListener {
                                     new BankHomePage(registeredUsername, registeredEmailID).setVisible(true);
                                 }
                                 dispose(); // Close the login window
+                                return;
                             } else {
                                 JOptionPane.showMessageDialog(this, "Invalid verification code.", "Error", JOptionPane.ERROR_MESSAGE);
                             }
-                            return;
                         }
-                    }catch (NoSuchAlgorithmException ne) {
+                    } catch (NoSuchAlgorithmException ne) {
                         // handle exception
                     }
                 }
+
                 // If the loop completes without finding a matching username and password, display an error message
                 numAttempts++; // Increment counter variable
                 if (numAttempts >= 3) { // Maximum number of attempts reached
@@ -142,8 +139,87 @@ public class NetBankingLogin extends JFrame implements ActionListener {
             } catch (FileNotFoundException ex) {
                 JOptionPane.showMessageDialog(null, "No registered user.");
             }
+        } else if (e.getSource() == forgotPasswordBtn) {
+            String email = JOptionPane.showInputDialog(this, "Please enter your registered email address:");
+            if (email != null) {
+                try {
+                    File file = new File("registrations.txt");
+                    RandomAccessFile raf = new RandomAccessFile(file, "rw");
+
+                    boolean emailFound = false;
+
+                    while (raf.getFilePointer() < raf.length()) {
+                        String line = raf.readLine();
+                        String[] parts = line.split(",");
+                        String registeredEmail = parts[1];
+                        String registeredUsername = parts[0];
+
+                        if (email.equals(registeredEmail)) {
+                            emailFound = true;
+
+                            // Generate a random 6-digit verification code
+                            int code = sendOTP(email);
+
+                            // Prompt the user to enter the verification code
+                            String input = JOptionPane.showInputDialog(this, "A verification code has been sent to your registered email address. Please enter the code below:");
+
+                            // Check if the input code matches the generated code
+                            if (input != null && input.equals(Integer.toString(code))) {
+                                // Prompt the user to enter a new password
+                                JPasswordField passwordField = new JPasswordField();
+                                JPasswordField confirmPasswordField = new JPasswordField();
+                                Object[] message = {"Enter new password:", passwordField, "Confirm new password:", confirmPasswordField};
+                                int option = JOptionPane.showConfirmDialog(null, message, "New Password", JOptionPane.OK_CANCEL_OPTION);
+
+                                // Check if the user clicked OK and entered a valid password
+                                if (option == JOptionPane.OK_OPTION) {
+                                    char[] newPassword = passwordField.getPassword();
+                                    char[] confirmedPassword = confirmPasswordField.getPassword();
+                                    if (newPassword.length >= 6) {
+                                        if (Arrays.equals(newPassword, confirmedPassword)) {
+                                            if (!hashPassword(String.valueOf(newPassword)).equals(parts[2])) {
+                                                // Update the password for the user with the matching email address
+                                                String updatedLine = parts[0] + "," + parts[1] + "," + hashPassword(String.valueOf(newPassword)) + "," + parts[3];
+
+                                                // Write the updated line to the file
+                                                raf.seek(raf.getFilePointer() - line.length() - 2); // Move the file pointer back to the start of the line
+                                                raf.writeBytes(updatedLine + System.lineSeparator());
+
+                                                JOptionPane.showMessageDialog(this, "Password updated successfully.");
+                                                return;
+                                            } else {
+                                                JOptionPane.showMessageDialog(this, "New password cannot be the same as old password.", "Error", JOptionPane.ERROR_MESSAGE);
+                                            }
+                                        } else {
+                                            JOptionPane.showMessageDialog(this, "Passwords do not match.", "Error", JOptionPane.ERROR_MESSAGE);
+                                        }
+                                    } else {
+                                        JOptionPane.showMessageDialog(this, "Password must be at least 6 characters long.", "Error", JOptionPane.ERROR_MESSAGE);
+                                    }
+                                }
+                            } else {
+                                JOptionPane.showMessageDialog(this, "Invalid verification code.", "Error", JOptionPane.ERROR_MESSAGE);
+                            }
+                        }
+                    }
+
+                    // If the loop completes without finding a matching email address and emailFound is still false, display an error message
+                    if (!emailFound) {
+                        JOptionPane.showMessageDialog(this, "The email address you entered is not registered.", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+
+                    raf.close();
+                } catch (FileNotFoundException ex) {
+                    JOptionPane.showMessageDialog(null, "No registered user.");
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                } catch (NoSuchAlgorithmException ne) {
+                    ne.printStackTrace();
+                }
+            }
         }
     }
+
 
     public int sendOTP(String email){
         // Generate a random 6-digit verification code
@@ -180,6 +256,7 @@ public class NetBankingLogin extends JFrame implements ActionListener {
         }
         return hexString.toString();
     }
+
 
     public static void main(String[] args) {
         new NetBankingLogin();
