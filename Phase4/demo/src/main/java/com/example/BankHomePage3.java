@@ -3,17 +3,19 @@
  * Akanksha Reddy Anthireddygari
  * Girija Rani Nimmagadda
  */
+//Bank Home Page for Manager/Admin
 package com.example;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
 
 public class BankHomePage3 extends JFrame implements ActionListener {
 
     JLabel titleLbl, welcomeLbl;
-    JButton addProjBtn, editProjBtn, delProjBtn, addTaskBtn, editTaskBtn, delTaskBtn;
-    JButton viewProfileBtn, openDashboardBtn, contactSupportBtn, logoutBtn;
+    JButton viewProfileBtn, openDashboardBtn, contactSupportBtn, userListButton, logoutBtn;
     public String username, emailID;
     private Timer timer;
     private int counter = 0;
@@ -23,7 +25,7 @@ public class BankHomePage3 extends JFrame implements ActionListener {
         this.emailID = emailID;
         // Set window properties
         setTitle("Bank Home Page : Manager/Admin");
-        setSize(600, 400);
+        setSize(800, 600);
         setLocationRelativeTo(null); // Center the window on the screen
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -48,52 +50,34 @@ public class BankHomePage3 extends JFrame implements ActionListener {
 
         welcomeLbl = new JLabel("Welcome, John Smith");
 
-        addProjBtn = new JButton("Add Project");
-        addProjBtn.addActionListener(this);
-
-        editProjBtn = new JButton("Edit Project");
-        editProjBtn.addActionListener(this);
-
-        delProjBtn = new JButton("Delete Project");
-        delProjBtn.addActionListener(this);
-
-        addTaskBtn = new JButton("Add Task");
-        addTaskBtn.addActionListener(this);
-
-        editTaskBtn = new JButton("Edit Task");
-        editTaskBtn.addActionListener(this);
-
-        delTaskBtn = new JButton("Delete Task");
-        delTaskBtn.addActionListener(this);
-
         logoutBtn = new JButton("Logout");
         logoutBtn.addActionListener(this);
 
-        viewProfileBtn = new JButton("View User Profile");
+        viewProfileBtn = new JButton("View Your Profile");
         viewProfileBtn.addActionListener(this);
 
         contactSupportBtn = new JButton("Contact Support??");
         contactSupportBtn.addActionListener(this);
 
+        userListButton = new JButton("View All Users List");
+        userListButton.addActionListener(this);
+
         // Add UI elements to layout
-        JPanel panel = new JPanel(new GridLayout(4, 1, 10, 10));
+        JPanel panel = new JPanel(new GridLayout(6, 3, 10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         panel.add(titleLbl);
         panel.add(welcomeLbl);
-        panel.add(addProjBtn);
-        panel.add(editProjBtn);
-        panel.add(delProjBtn);
-        panel.add(addTaskBtn);
-        panel.add(editTaskBtn);
-        panel.add(delTaskBtn);
+        panel.add(userListButton);
+        this.add(panel, BorderLayout.CENTER);
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setVisible(true);
 
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         btnPanel.add(logoutBtn);
 
-        add(panel, BorderLayout.CENTER);
         add(btnPanel, BorderLayout.SOUTH);
 
-        openDashboardBtn = new JButton("Open Dashboard");
+        openDashboardBtn = new JButton("Open Task Dashboard");
         openDashboardBtn.addActionListener(this);
 
         JPanel projectBtnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -107,28 +91,15 @@ public class BankHomePage3 extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         if(e.getSource() == openDashboardBtn){
             counter = 0;
-            Dashboard dashboard = new Dashboard();
-        }else if (e.getSource() == addProjBtn) {
-            counter = 0;
-            System.out.println("Add Project Functionality");
-        } else if (e.getSource() == editProjBtn) {
-            counter = 0;
-            System.out.println("Edit Project Functionality");
-        } else if(e.getSource() == delProjBtn){
-            counter = 0;
-            System.out.println("Delete Project Functionality");
-        }else if (e.getSource() == addTaskBtn) {
-            counter = 0;
-            System.out.println("Add Task Functionality");
-        } else if (e.getSource() == editTaskBtn) {
-            counter = 0;
-            System.out.println("Edit Task Functionality");
-        } else if(e.getSource() == delTaskBtn){
-            counter = 0;
-            System.out.println("Delete Task Functionality");
+            new Dashboard();
         }else if (e.getSource() == logoutBtn) {
             System.out.println("Logout button clicked");
             timer.stop();
+            // Close all windows
+            Window[] windows = Window.getWindows();
+            for (Window window : windows) {
+                window.dispose();
+            }
             NetBankingLogin netBankingLogin = new NetBankingLogin();
             setVisible(false);
             netBankingLogin.setVisible(true);
@@ -138,6 +109,35 @@ public class BankHomePage3 extends JFrame implements ActionListener {
         } else if (e.getSource() == contactSupportBtn) {
             counter = 0;
             contactSupport();
+        } else if (e.getSource() == userListButton) {
+            counter = 0;
+            try {
+                BufferedReader reader = new BufferedReader(new FileReader("registrations.txt"));
+                StringBuilder userList = new StringBuilder();
+                String line = reader.readLine();
+                int x = 1;
+                while (line != null) {
+                    String[] tokens = line.split(",");
+                    if (tokens.length == 4) {
+                        String username = tokens[0].trim();
+                        String email = tokens[1].trim();
+                        String accountType = tokens[3].trim();
+                        userList.append("User "+x+" :").append("\n");
+                        userList.append("Username: "+username).append("\n");
+                        userList.append("Email ID: "+email).append("\n");
+                        userList.append("Account Access Type: "+accountType).append("\n");
+                        x++;
+                    }
+                    line = reader.readLine();
+                }
+                reader.close();
+                JTextArea textArea = new JTextArea(userList.toString());
+                JScrollPane scrollPane = new JScrollPane(textArea);
+                scrollPane.setPreferredSize(new java.awt.Dimension(400, 300));
+                JOptionPane.showMessageDialog(null, scrollPane, "User List", JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
     }
     private void viewProfile() {
@@ -176,6 +176,8 @@ public class BankHomePage3 extends JFrame implements ActionListener {
         contactSupportFrm.add(panel);
         contactSupportFrm.setVisible(true);
     }
-
+    public static void main(String[] args) {
+        new BankHomePage3("akanksha","ak123@gmail.com");
+    }
 
 }

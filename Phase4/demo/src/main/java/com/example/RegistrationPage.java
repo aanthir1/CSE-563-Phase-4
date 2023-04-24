@@ -137,7 +137,7 @@ public class RegistrationPage extends JFrame implements ActionListener {
                     JOptionPane.showMessageDialog(this, "Registration successful.");
 
                     // Store registration details in a list
-                    String registrationDetails = username + "," + email + "," + hashPwd + "," + accountType;
+                    String registrationDetails = username + "," + email + "," + hashPwd + "," + accountType+"\n";
 
                     // Write registration details to text file
                     try {

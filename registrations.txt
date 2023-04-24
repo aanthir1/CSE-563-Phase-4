@@ -1,1 +1,4 @@
 manas123,manas123@gmail.com,52e0ba483de5b9c557c2ddc34811f726d2f6b95f3465ffa5970cbf05c8d23a61,Manager/Admin
+akanksha,anthireddyaki98@gmail.com,5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8,Customer
+girija,girija@gmail.com,5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8,Employee
+

@@ -9,4 +9,4 @@ Required Installations or software:-
 
 All these jar files and libraries are included in the project file.
 
-Better instatllation and running with Visual Studio Code.
+Better installation and running with IntelliJ IDEA.
